@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { UsersIcon, SlackIcon, ActivityIcon } from 'lucide-react';
+import { UsersIcon, SlackIcon, ActivityIcon, CalendarIcon } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import LicenseResult from './LicenseResult';
 
 // Types pour les données du formulaire et le résultat
@@ -34,10 +34,18 @@ interface LicenseRecommendation {
   };
 }
 
+// Définition des catégories d'utilisateurs
+const userCategories = [
+  { label: "1", value: 1 },
+  { label: "1-10", value: 10 },
+  { label: "11-50", value: 50 },
+  { label: ">50", value: 100 },
+];
+
 const LicenseAdvisor = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
-    userCount: 10,
+    userCount: 1,
     intensity: 'normal',
     features: {
       embedded: false,
@@ -52,8 +60,9 @@ const LicenseAdvisor = () => {
   const [showResult, setShowResult] = useState(false);
 
   // Gestion des changements de valeurs
-  const handleUserCountChange = (value: number[]) => {
-    setFormData({ ...formData, userCount: value[0] });
+  const handleUserCountChange = (value: string) => {
+    const numericValue = parseInt(value, 10);
+    setFormData({ ...formData, userCount: numericValue });
   };
 
   const handleIntensityChange = (value: 'faible' | 'normal' | 'intensif') => {
@@ -178,7 +187,7 @@ const LicenseAdvisor = () => {
 
   const handleReset = () => {
     setFormData({
-      userCount: 10,
+      userCount: 1,
       intensity: 'normal',
       features: {
         embedded: false,
@@ -196,7 +205,7 @@ const LicenseAdvisor = () => {
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-bleu-tres-fonce mb-2">
+        <h2 className="text-3xl font-bold text-bleu-tres-fonce mb-2 bg-gradient-to-r from-bleu to-bleu-fonce bg-clip-text text-transparent">
           Conseiller de Licence Power BI / Fabric
         </h2>
         <p className="text-gray-600">
@@ -207,34 +216,35 @@ const LicenseAdvisor = () => {
       {!showResult ? (
         <div className="space-y-8 animate-fade-in">
           {/* Nombre d'utilisateurs */}
-          <Card className="overflow-hidden border-bleu border-opacity-20">
+          <Card className="overflow-hidden border-bleu border-opacity-20 bg-gradient-to-br from-white to-bleu-tres-clair/50 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <UsersIcon className="h-6 w-6 text-bleu" />
                 <h3 className="text-xl font-semibold text-bleu-tres-fonce">Nombre d'utilisateurs</h3>
               </div>
-              <div className="space-y-6 pt-2">
-                <div className="flex flex-col space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">1</span>
-                    <span className="font-medium text-bleu-fonce">{formData.userCount}</span>
-                    <span className="text-sm text-gray-500">200</span>
-                  </div>
-                  <Slider 
-                    value={[formData.userCount]} 
-                    min={1} 
-                    max={200} 
-                    step={1} 
-                    onValueChange={handleUserCountChange}
-                    className="cursor-pointer"
-                  />
-                </div>
+              <div className="pt-2">
+                <ToggleGroup 
+                  type="single" 
+                  value={formData.userCount.toString()} 
+                  onValueChange={(value) => value && handleUserCountChange(value)}
+                  className="justify-between w-full gap-2"
+                >
+                  {userCategories.map((category) => (
+                    <ToggleGroupItem 
+                      key={category.label} 
+                      value={category.value.toString()} 
+                      className="flex-1 py-3 data-[state=on]:bg-bleu data-[state=on]:text-white hover:bg-bleu-tres-clair border border-bleu border-opacity-20"
+                    >
+                      {category.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               </div>
             </CardContent>
           </Card>
 
           {/* Intensité d'utilisation */}
-          <Card className="overflow-hidden border-bleu border-opacity-20">
+          <Card className="overflow-hidden border-bleu border-opacity-20 bg-gradient-to-br from-white to-bleu-tres-clair/50 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <ActivityIcon className="h-6 w-6 text-bleu" />
@@ -242,17 +252,17 @@ const LicenseAdvisor = () => {
               </div>
               <div className="pt-2">
                 <RadioGroup value={formData.intensity} onValueChange={(value: any) => handleIntensityChange(value)} className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex items-center space-x-2 bg-bleu-tres-clair hover:bg-opacity-90 transition-all p-4 rounded-md flex-1 cursor-pointer">
+                  <div className="flex items-center space-x-2 bg-bleu-tres-clair hover:bg-opacity-90 transition-all p-4 rounded-md flex-1 cursor-pointer border-2 hover:border-bleu">
                     <RadioGroupItem id="faible" value="faible" className="text-bleu" />
                     <Label htmlFor="faible" className="cursor-pointer font-medium">Faible</Label>
                     <p className="text-xs text-gray-500 ml-6">Peu de rapports, consultations occasionnelles</p>
                   </div>
-                  <div className="flex items-center space-x-2 bg-bleu-tres-clair hover:bg-opacity-90 transition-all p-4 rounded-md flex-1 cursor-pointer">
+                  <div className="flex items-center space-x-2 bg-bleu-tres-clair hover:bg-opacity-90 transition-all p-4 rounded-md flex-1 cursor-pointer border-2 hover:border-bleu">
                     <RadioGroupItem id="normal" value="normal" className="text-bleu" />
                     <Label htmlFor="normal" className="cursor-pointer font-medium">Normal</Label>
                     <p className="text-xs text-gray-500 ml-6">Utilisation régulière, nombre modéré de rapports</p>
                   </div>
-                  <div className="flex items-center space-x-2 bg-bleu-tres-clair hover:bg-opacity-90 transition-all p-4 rounded-md flex-1 cursor-pointer">
+                  <div className="flex items-center space-x-2 bg-bleu-tres-clair hover:bg-opacity-90 transition-all p-4 rounded-md flex-1 cursor-pointer border-2 hover:border-bleu">
                     <RadioGroupItem id="intensif" value="intensif" className="text-bleu" />
                     <Label htmlFor="intensif" className="cursor-pointer font-medium">Intensif</Label>
                     <p className="text-xs text-gray-500 ml-6">Nombreux rapports, consultations fréquentes</p>
@@ -263,14 +273,14 @@ const LicenseAdvisor = () => {
           </Card>
 
           {/* Fonctionnalités */}
-          <Card className="overflow-hidden border-bleu border-opacity-20">
+          <Card className="overflow-hidden border-bleu border-opacity-20 bg-gradient-to-br from-white to-bleu-tres-clair/50 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <SlackIcon className="h-6 w-6 text-bleu" />
                 <h3 className="text-xl font-semibold text-bleu-tres-fonce">Fonctionnalités requises</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md">
+                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md hover:shadow-md transition-all border border-bleu/10 hover:border-bleu/30">
                   <Checkbox 
                     id="embedded" 
                     checked={formData.features.embedded}
@@ -282,7 +292,7 @@ const LicenseAdvisor = () => {
                     <p className="text-xs text-gray-500">Pour intégrer Power BI dans vos applications</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md">
+                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md hover:shadow-md transition-all border border-bleu/10 hover:border-bleu/30">
                   <Checkbox 
                     id="cicd" 
                     checked={formData.features.cicd}
@@ -294,7 +304,7 @@ const LicenseAdvisor = () => {
                     <p className="text-xs text-gray-500">Pour automatiser le déploiement de rapports</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md">
+                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md hover:shadow-md transition-all border border-bleu/10 hover:border-bleu/30">
                   <Checkbox 
                     id="frequent_refresh" 
                     checked={formData.features.frequent_refresh}
@@ -306,7 +316,7 @@ const LicenseAdvisor = () => {
                     <p className="text-xs text-gray-500">Refresh des données plusieurs fois par jour</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md">
+                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md hover:shadow-md transition-all border border-bleu/10 hover:border-bleu/30">
                   <Checkbox 
                     id="deployment_pipelines" 
                     checked={formData.features.deployment_pipelines}
@@ -318,7 +328,7 @@ const LicenseAdvisor = () => {
                     <p className="text-xs text-gray-500">Pour gérer le cycle de vie des rapports</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md">
+                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md hover:shadow-md transition-all border border-bleu/10 hover:border-bleu/30">
                   <Checkbox 
                     id="web_publishing" 
                     checked={formData.features.web_publishing}
@@ -330,7 +340,7 @@ const LicenseAdvisor = () => {
                     <p className="text-xs text-gray-500">Pour partager des rapports sur le web</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md">
+                <div className="flex items-start space-x-3 bg-bleu-tres-clair p-4 rounded-md hover:shadow-md transition-all border border-bleu/10 hover:border-bleu/30">
                   <Checkbox 
                     id="advanced_analytics" 
                     checked={formData.features.advanced_analytics}
@@ -350,7 +360,7 @@ const LicenseAdvisor = () => {
           <div className="flex justify-center pt-4">
             <Button 
               onClick={generateRecommendation} 
-              className="bg-bleu hover:bg-bleu-fonce text-white px-8 py-6 text-lg rounded-full transition-all transform hover:scale-105"
+              className="bg-bleu hover:bg-bleu-fonce text-white px-8 py-6 text-lg rounded-full transition-all transform hover:scale-105 shadow-lg"
             >
               Recommander une licence
             </Button>
@@ -359,14 +369,6 @@ const LicenseAdvisor = () => {
       ) : (
         <div className="animate-fade-in">
           {recommendation && <LicenseResult recommendation={recommendation} />}
-          <div className="flex justify-center mt-8">
-            <Button 
-              onClick={handleReset} 
-              className="bg-rouge hover:bg-opacity-90 text-white px-6 py-2 rounded-full"
-            >
-              Nouvelle recommandation
-            </Button>
-          </div>
         </div>
       )}
     </div>
